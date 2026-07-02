@@ -1,4 +1,4 @@
-app_name = "Sambrid-app"
+app_name = "sambrid-app"
 
 container_port = 5000
 
