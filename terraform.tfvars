@@ -1,4 +1,4 @@
-app_name = "alice-app"
+app_name = "Sambrid-app"
 
 container_port = 5000
 
