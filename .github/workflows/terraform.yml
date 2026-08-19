@@ -46,6 +46,22 @@ jobs:
 
       - uses: hashicorp/setup-terraform@v3
       - run: terraform init
+      - name: Adopt existing frontend resources
+        run: |
+          if ! terraform state list | grep -q '^aws_s3_bucket.frontend$'; then
+            if aws s3api head-bucket --bucket "${TF_VAR_frontend_bucket_name:-sambrid-frontend-bucket}" 2>/dev/null; then
+              terraform import aws_s3_bucket.frontend "${TF_VAR_frontend_bucket_name:-sambrid-frontend-bucket}"
+            fi
+          fi
+
+          if ! terraform state list | grep -q '^aws_cloudfront_origin_access_control.frontend$'; then
+            oac_id=$(aws cloudfront list-origin-access-controls \
+              --query "OriginAccessControlList.Items[?Name=='${TF_VAR_frontend_bucket_name:-sambrid-frontend-bucket}-oac'].Id | [0]" \
+              --output text)
+            if [[ -n "$oac_id" && "$oac_id" != "None" ]]; then
+              terraform import aws_cloudfront_origin_access_control.frontend "$oac_id"
+            fi
+          fi
       - run: terraform validate
       - run: terraform plan
       - run: terraform apply -auto-approve
