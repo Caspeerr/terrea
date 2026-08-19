@@ -16,3 +16,8 @@ variable "price_class" {
   default     = "PriceClass_100"
 }
 
+variable "alb_name" {
+  description = "Name of the shared platform ALB"
+  type        = string
+  default     = "concproject-alb"
+}
