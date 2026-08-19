@@ -62,6 +62,15 @@ jobs:
               terraform import aws_cloudfront_origin_access_control.frontend "$oac_id"
             fi
           fi
+
+          if ! terraform state list | grep -q '^aws_cloudfront_distribution.frontend$'; then
+            dist_id=$(aws cloudfront list-distributions \
+              --query "DistributionList.Items[?Origins.Items[?DomainName=='${TF_VAR_frontend_bucket_name:-sambrid-frontend-bucket}.s3.ap-south-1.amazonaws.com']] | [0].Id" \
+              --output text)
+            if [[ -n "$dist_id" && "$dist_id" != "None" ]]; then
+              terraform import aws_cloudfront_distribution.frontend "$dist_id"
+            fi
+          fi
       - run: terraform validate
       - run: terraform plan
       - run: terraform apply -auto-approve
